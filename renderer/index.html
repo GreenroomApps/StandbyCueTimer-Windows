@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:">
+<title>StandbyCue Presentation timer</title>
+<style>
+  :root{ --bar:#16181b; --line:#2a2d31; --tp:#f5f5f5; --tm:#9aa0a6; --arctic:#38BDF8; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; background:#111; color:var(--tp); font-family:'Segoe UI',system-ui,sans-serif; overflow:hidden; }
+  .app{ position:relative; height:100vh; }
+
+  /* Timer fills the whole window; the bar floats over the top only on hover. */
+  webview{ position:absolute; inset:0; width:100%; height:100%; border:0; background:#111; }
+
+  /* Top hover-zone: moving the mouse to the top reveals the bar; leaving hides it. */
+  .top{ position:absolute; top:0; left:0; right:0; height:46px; z-index:10; }
+  .bar{ position:absolute; top:0; left:0; right:0; height:30px; display:flex; align-items:center; gap:8px;
+    padding:0 6px 0 10px; background:var(--bar); border-bottom:1px solid var(--line);
+    -webkit-app-region:drag; opacity:0; transform:translateY(-8px); pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease; }
+  .top:hover .bar, body.show-bar .bar, body:not(.ready) .bar{ opacity:1; transform:none; pointer-events:auto; }
+
+  .brand{ font-size:11px; font-weight:600; letter-spacing:.02em; color:var(--tm); white-space:nowrap; }
+  .spacer{ flex:1; }
+  .no-drag{ -webkit-app-region:no-drag; }
+  .code{ width:78px; height:20px; background:#0d0f11; border:1px solid var(--line); border-radius:4px;
+    color:var(--tp); font-family:'Cascadia Mono',Consolas,monospace; font-size:12px; letter-spacing:.12em;
+    text-transform:uppercase; text-align:center; outline:none; }
+  .code:focus{ border-color:var(--arctic); }
+  .btn{ width:22px; height:22px; display:grid; place-items:center; border:0; background:transparent;
+    color:var(--tm); border-radius:4px; cursor:pointer; font-size:13px; line-height:1; }
+  .btn:hover{ background:#26292e; color:var(--tp); }
+  /* Pin "on" = a filled arctic pill (emoji ignores CSS colour, so use the background) */
+  .btn.pin.on{ background:var(--arctic); color:#06222f; }
+  .btn.pin.on:hover{ background:#5cc9fb; color:#06222f; }
+  .btn.close:hover{ background:#c2283b; color:#fff; }
+
+  .hint{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:16px; }
+  .hint p{ color:var(--tm); font-size:13px; line-height:1.5; max-width:260px; }
+  .hint b{ color:var(--tp); }
+  .hidden{ display:none !important; }
+</style>
+</head>
+<body>
+  <div class="app">
+    <webview id="view" class="hidden" allowpopups="false" partition="persist:sctimer"></webview>
+
+    <div id="hint" class="hint">
+      <p>Enter your rundown's <b>timer code</b> above to show the live countdown.<br>Find it in StandbyCue under Share · Stage timer.</p>
+    </div>
+
+    <div class="top">
+      <div class="bar">
+        <span class="brand">StandbyCue Presentation timer</span>
+        <span class="spacer"></span>
+        <input id="code" class="code no-drag" maxlength="5" placeholder="CODE" title="Rundown timer code" />
+        <button id="pin" class="btn pin on no-drag" title="Always on top">📌</button>
+        <button id="min" class="btn no-drag" title="Minimize">—</button>
+        <button id="close" class="btn close no-drag" title="Close">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

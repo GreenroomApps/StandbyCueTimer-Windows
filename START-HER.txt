@@ -1,0 +1,69 @@
+STANDBYCUE TIMER — WINDOWS
+==========================
+Lite "alltid øverst"-vindu som viser stage-timeren. Legg det ved siden av
+PowerPoint Presenter View. (Virker med alle program, ikke bare PowerPoint.)
+
+
+FØR DU STARTER (kun én gang)
+----------------------------
+1. Installer Node.js (LTS) fra:  https://nodejs.org
+   Kjør installeren og trykk Neste/Next hele veien.
+2. Sørg for at hele mappa "StandbyCueTimer-Windows" ligger på PC-en
+   (f.eks. på skrivebordet).
+
+
+KJØRE APPEN
+-----------
+1. Åpne mappa i Utforsker.
+2. Høyreklikk inni mappa  ->  "Åpne i terminal"  (Windows 11).
+   (Windows 10: åpne PowerShell fra Start-menyen, og skriv linja under.)
+
+3. Skriv/lim inn, én linje av gangen:
+
+npm install
+npm start
+
+   ("npm install" tar litt tid første gang — den laster ned Electron.)
+
+4. Timer-vinduet dukker opp. Skriv timer-koden (5 tegn) i topplinja og
+   trykk Enter. Koden finner du i StandbyCue under:  Share  ->  Stage timer
+
+
+HVIS DU FÅR "running scripts is disabled on this system"
+-------------------------------------------------------
+PowerShell blokkerer npm-skriptet. Fiks (én gang), lim inn og trykk Enter:
+
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+
+Bekreft med J (eller Y) + Enter. Kjør så "npm install" på nytt.
+
+Alternativ uten å endre noe — bruk .cmd-varianten:
+
+npm.cmd install
+npm.cmd start
+
+
+LAGE EN .EXE (valgfritt — så slipper du terminalen neste gang)
+--------------------------------------------------------------
+Skriv i samme terminal:
+
+npm run dist
+
+Den ferdige filen "StandbyCue Presentation timer 1.0.2.exe" havner i mappa "dist".
+Kopier den hvor du vil og dobbeltklikk for å starte. Ingen installasjon.
+
+
+HVIS DU MÅ SKRIVE STIEN MANUELT (PowerShell)
+--------------------------------------------
+Ligger mappa på skrivebordet, skriv dette først:
+
+cd "$HOME\Desktop\StandbyCueTimer-Windows"
+
+
+BRUK
+----
+- Dra topplinja for å flytte vinduet.
+- Dra en kant eller et hjørne for å endre størrelse.
+- 📌 slår "alltid øverst" av/på.
+- ✕ lukker.
+Kode og vindusstørrelse/-posisjon huskes til neste gang.
