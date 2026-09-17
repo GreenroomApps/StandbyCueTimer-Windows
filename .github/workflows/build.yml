@@ -1,0 +1,85 @@
+name: Build apps
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:   # lets you start a build manually from the Actions tab
+
+permissions:
+  contents: write      # needed to create/update the Release
+
+jobs:
+  # Build both platforms in parallel. Each leg just produces its installer and hands it
+  # off as an artifact — it does NOT touch the GitHub Release. That way there's never
+  # more than one process writing to the release (the cause of the "Error saving asset"
+  # 500s we hit when two workflows uploaded at once).
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            build: npm run dist
+            out: dist/*.exe
+          - os: macos-latest
+            build: npm run dist:mac
+            out: dist/*.dmg
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      # macOS icons must be at least 512×512; the shared icon.png is 256, so upscale a
+      # 1024 copy for the .icns electron-builder generates. (sips ships with macOS.)
+      - name: Prepare macOS icon
+        if: matrix.os == 'macos-latest'
+        run: sips -z 1024 1024 assets/icon.png --out build/icon.png
+
+      # CSC_IDENTITY_AUTO_DISCOVERY=false keeps the (unsigned) mac build from hunting for
+      # a signing certificate. Harmless on Windows.
+      - name: Build the app
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+        run: ${{ matrix.build }}
+
+      - name: Upload the installer as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ matrix.os }}
+          path: ${{ matrix.out }}
+          if-no-files-found: error
+
+  # One publisher. Runs only after BOTH builds succeed, gathers their artifacts and
+  # uploads the .exe and .dmg to the release in a single pass — no concurrent writes.
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Read version from package.json
+        id: v
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Download the built installers
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Publish the Release with both installers
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.v.outputs.version }}
+          name: StandbyCue Presentation timer v${{ steps.v.outputs.version }}
+          files: artifacts/*
+          fail_on_unmatched_files: true
