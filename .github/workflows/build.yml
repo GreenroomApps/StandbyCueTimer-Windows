@@ -94,4 +94,14 @@ jobs:
           TAG="v${{ steps.v.outputs.version }}"
           gh release view "$TAG" >/dev/null 2>&1 \
             || gh release create "$TAG" --title "StandbyCue Presentation timer $TAG" --notes "Automated build of $TAG."
-          gh release upload "$TAG" artifacts/*.exe artifacts/*.dmg --clobber
+          # uploads.github.com occasionally answers 500 ("Error creating asset temp dir").
+          # It's transient GitHub-side, so retry a few times before giving up. --clobber
+          # makes each attempt replace whatever a previous half-attempt left behind.
+          for attempt in 1 2 3 4 5 6; do
+            if gh release upload "$TAG" artifacts/*.exe artifacts/*.dmg --clobber; then
+              echo "Upload succeeded on attempt $attempt"; exit 0
+            fi
+            echo "Upload attempt $attempt failed (likely a transient 500) — retrying in 20s…"
+            sleep 20
+          done
+          echo "All upload attempts failed."; exit 1
