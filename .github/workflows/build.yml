@@ -97,11 +97,14 @@ jobs:
           # uploads.github.com occasionally answers 500 ("Error creating asset temp dir").
           # It's transient GitHub-side, so retry a few times before giving up. --clobber
           # makes each attempt replace whatever a previous half-attempt left behind.
+          # Each attempt is wrapped in `timeout` because the upload sometimes HANGS (not
+          # just 500s) when uploads.github.com is unhealthy — without a per-attempt cap a
+          # single hang would eat the whole job and the retry loop would never cycle.
           for attempt in 1 2 3 4 5 6; do
-            if gh release upload "$TAG" artifacts/*.exe artifacts/*.dmg --clobber; then
+            if timeout 180 gh release upload "$TAG" artifacts/*.exe artifacts/*.dmg --clobber; then
               echo "Upload succeeded on attempt $attempt"; exit 0
             fi
-            echo "Upload attempt $attempt failed (likely a transient 500) — retrying in 20s…"
+            echo "Upload attempt $attempt failed or timed out — retrying in 20s…"
             sleep 20
           done
           echo "All upload attempts failed."; exit 1
