@@ -1,6 +1,6 @@
 {
   "name": "standbycue-presentation-timer",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "StandbyCue Presentation timer — an always-on-top, movable, resizable window to sit next to PowerPoint Presenter View.",
   "author": "Holi",
   "main": "main.js",
@@ -17,6 +17,7 @@
     "appId": "no.holi.standbycuetimer",
     "productName": "StandbyCue Presentation timer",
     "artifactName": "StandbyCue-Presentation-Timer.${ext}",
+    "afterPack": "build/afterPack.js",
     "files": ["main.js", "preload.js", "renderer/**/*", "assets/**/*"],
     "win": {
       "target": "portable",
