@@ -15,6 +15,7 @@
   "build": {
     "appId": "no.holi.standbycuetimer",
     "productName": "StandbyCue Presentation timer",
+    "artifactName": "StandbyCue-Presentation-Timer.${ext}",
     "files": ["main.js", "preload.js", "renderer/**/*", "assets/**/*"],
     "win": {
       "target": "portable",

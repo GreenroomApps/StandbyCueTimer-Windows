@@ -5,6 +5,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:   # lets you start a build manually from the Actions tab
 
+permissions:
+  contents: write      # needed to create the Release
+
 jobs:
   build:
     runs-on: windows-latest
@@ -23,9 +26,22 @@ jobs:
       - name: Build the portable .exe
         run: npm run dist
 
-      - name: Upload the .exe
+      - name: Read version from package.json
+        id: v
+        shell: bash
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Upload the .exe as a build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: StandbyCue-Presentation-timer
+          name: StandbyCue-Presentation-Timer
           path: dist/*.exe
           if-no-files-found: error
+
+      - name: Publish a Release with the .exe
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.v.outputs.version }}
+          name: StandbyCue Presentation timer v${{ steps.v.outputs.version }}
+          files: dist/*.exe
+          fail_on_unmatched_files: true
