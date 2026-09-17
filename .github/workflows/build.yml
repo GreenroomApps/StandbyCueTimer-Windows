@@ -76,10 +76,20 @@ jobs:
           path: artifacts
           merge-multiple: true
 
+      # Publish with GitHub's own CLI (pre-installed on the runner) instead of a
+      # third-party action. gh separates "create the release" from "upload assets" and
+      # handles GitHub's eventual consistency, which is what tripped up softprops
+      # ("release not yet discoverable … Error saving asset"). --clobber makes re-runs
+      # overwrite the same-named assets cleanly.
       - name: Publish the Release with both installers
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.v.outputs.version }}
-          name: StandbyCue Presentation timer v${{ steps.v.outputs.version }}
-          files: artifacts/*
-          fail_on_unmatched_files: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="v${{ steps.v.outputs.version }}"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --title "StandbyCue Presentation timer $TAG" \
+              --notes "Automated build of $TAG."
+          fi
+          gh release upload "$TAG" artifacts/* --clobber
