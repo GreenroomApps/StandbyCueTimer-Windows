@@ -37,11 +37,19 @@ function createWindow() {
     },
   })
 
+  // Give the <webview> (the loaded standbycue.app timer page) a preload so it can ask
+  // the shell to toggle full screen — see renderer/webview-preload.js.
+  win.webContents.on('will-attach-webview', (_e, webPreferences) => {
+    webPreferences.preload = path.join(__dirname, 'renderer', 'webview-preload.js')
+  })
+
   // Float above other windows, including a maximised Presenter View.
   win.setAlwaysOnTop(true, 'screen-saver')
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'))
 
-  const persist = () => { if (win) saveCfg({ ...loadCfg(), ...win.getBounds() }) }
+  // Don't persist bounds while full screen, or the next launch would restore a
+  // screen-sized window.
+  const persist = () => { if (win && !win.isFullScreen()) saveCfg({ ...loadCfg(), ...win.getBounds() }) }
   win.on('resize', persist)
   win.on('move', persist)
   win.on('closed', () => { win = null })
@@ -58,3 +66,5 @@ ipcMain.on('toggle-top', (_e, on) => {
   if (on) win.setAlwaysOnTop(true, 'screen-saver')
   else win.setAlwaysOnTop(false)   // passing a level with false doesn't reliably drop it
 })
+// Full screen, driven by the API "fullscreen" toggle relayed from the timer page.
+ipcMain.on('set-fullscreen', (_e, on) => { if (win) win.setFullScreen(!!on) })

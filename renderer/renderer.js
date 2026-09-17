@@ -28,6 +28,12 @@ function apply() {
 codeInput.addEventListener('change', apply)
 codeInput.addEventListener('keydown', e => { if (e.key === 'Enter') { apply(); codeInput.blur() } })
 
+// The timer page (in the webview) relays the API "fullscreen" toggle up to us; pass it
+// on to the main process to flip the OS window.
+view.addEventListener('ipc-message', (e) => {
+  if (e.channel === 'sc-fullscreen') window.sc.setFullscreen(!!e.args[0])
+})
+
 let onTop = true
 pin.addEventListener('click', () => { onTop = !onTop; pin.classList.toggle('on', onTop); window.sc.setAlwaysOnTop(onTop) })
 document.getElementById('min').addEventListener('click', () => window.sc.minimize())
