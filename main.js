@@ -68,3 +68,11 @@ ipcMain.on('toggle-top', (_e, on) => {
 })
 // Full screen, driven by the API "fullscreen" toggle relayed from the timer page.
 ipcMain.on('set-fullscreen', (_e, on) => { if (win) win.setFullScreen(!!on) })
+// Hide/show, driven by the API "hide" toggle. We make the window invisible and
+// click-through rather than minimising, so the webview keeps polling and can be shown
+// again by the same toggle.
+ipcMain.on('set-hidden', (_e, on) => {
+  if (!win) return
+  if (on) { win.setIgnoreMouseEvents(true, { forward: true }); win.setOpacity(0) }
+  else    { win.setOpacity(1); win.setIgnoreMouseEvents(false) }
+})

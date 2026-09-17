@@ -6,4 +6,5 @@ contextBridge.exposeInMainWorld('sc', {
   minimize: () => ipcRenderer.send('minimize'),
   setAlwaysOnTop: (on) => ipcRenderer.send('toggle-top', on),
   setFullscreen: (on) => ipcRenderer.send('set-fullscreen', on),
+  setHidden: (on) => ipcRenderer.send('set-hidden', on),
 })

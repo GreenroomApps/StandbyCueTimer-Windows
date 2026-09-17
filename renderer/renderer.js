@@ -32,6 +32,7 @@ codeInput.addEventListener('keydown', e => { if (e.key === 'Enter') { apply(); c
 // on to the main process to flip the OS window.
 view.addEventListener('ipc-message', (e) => {
   if (e.channel === 'sc-fullscreen') window.sc.setFullscreen(!!e.args[0])
+  else if (e.channel === 'sc-hide') window.sc.setHidden(!!e.args[0])
 })
 
 let onTop = true

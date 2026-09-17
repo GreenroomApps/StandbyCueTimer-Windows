@@ -6,4 +6,5 @@ const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('scHost', {
   setFullscreen: (on) => ipcRenderer.sendToHost('sc-fullscreen', !!on),
+  setHidden: (on) => ipcRenderer.sendToHost('sc-hide', !!on),
 })
