@@ -62,6 +62,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 15    # never let a stuck upload hang for ages again
     steps:
       - name: Check out the code
         uses: actions/checkout@v4
@@ -76,20 +77,21 @@ jobs:
           path: artifacts
           merge-multiple: true
 
+      - name: List what we're about to upload
+        run: ls -lhR artifacts
+
       # Publish with GitHub's own CLI (pre-installed on the runner) instead of a
       # third-party action. gh separates "create the release" from "upload assets" and
       # handles GitHub's eventual consistency, which is what tripped up softprops
       # ("release not yet discoverable … Error saving asset"). --clobber makes re-runs
-      # overwrite the same-named assets cleanly.
+      # overwrite the same-named assets cleanly. We name the two extensions explicitly so
+      # a glob can never accidentally hand gh a directory.
       - name: Publish the Release with both installers
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           TAG="v${{ steps.v.outputs.version }}"
-          if ! gh release view "$TAG" >/dev/null 2>&1; then
-            gh release create "$TAG" \
-              --title "StandbyCue Presentation timer $TAG" \
-              --notes "Automated build of $TAG."
-          fi
-          gh release upload "$TAG" artifacts/* --clobber
+          gh release view "$TAG" >/dev/null 2>&1 \
+            || gh release create "$TAG" --title "StandbyCue Presentation timer $TAG" --notes "Automated build of $TAG."
+          gh release upload "$TAG" artifacts/*.exe artifacts/*.dmg --clobber
