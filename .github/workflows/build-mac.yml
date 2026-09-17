@@ -30,7 +30,7 @@ jobs:
 
       # Unsigned build: tell electron-builder not to look for a signing certificate, so
       # CI never tries (and fails) to sign. The app runs after a one-time right-click → Open.
-      - name: Build the .dmg and .zip (unsigned)
+      - name: Build the .dmg (unsigned)
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
         run: npm run dist:mac
@@ -43,9 +43,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: StandbyCue-Presentation-Timer-mac
-          path: |
-            dist/*.dmg
-            dist/*.zip
+          path: dist/*.dmg
           if-no-files-found: error
 
       - name: Publish the Mac app to the Release
@@ -53,7 +51,5 @@ jobs:
         with:
           tag_name: v${{ steps.v.outputs.version }}
           name: StandbyCue Presentation timer v${{ steps.v.outputs.version }}
-          files: |
-            dist/*.dmg
-            dist/*.zip
+          files: dist/*.dmg
           fail_on_unmatched_files: true

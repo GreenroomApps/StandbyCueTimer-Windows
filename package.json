@@ -23,7 +23,7 @@
       "icon": "build/icon.ico"
     },
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": ["dmg"],
       "icon": "build/icon.png",
       "category": "public.app-category.utilities",
       "identity": null
