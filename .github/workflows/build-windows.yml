@@ -8,6 +8,13 @@ on:
 permissions:
   contents: write      # needed to create the Release
 
+# Shared with build-mac.yml: the two workflows upload to the SAME release, so this
+# concurrency group makes them take turns instead of writing at once (which makes
+# GitHub's asset API return 500s).
+concurrency:
+  group: release-upload
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: windows-latest

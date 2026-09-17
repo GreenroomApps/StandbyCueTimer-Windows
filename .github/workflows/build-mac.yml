@@ -8,6 +8,13 @@ on:
 permissions:
   contents: write      # needed to create/update the Release
 
+# The Windows and Mac workflows both upload to the SAME release. Two jobs writing to
+# one release at once makes GitHub's asset API return 500s, so share one concurrency
+# group across both workflows: the second waits for the first instead of racing it.
+concurrency:
+  group: release-upload
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: macos-latest
