@@ -19,7 +19,9 @@
     padding:0 6px 0 10px; background:var(--bar); border-bottom:1px solid var(--line);
     -webkit-app-region:drag; opacity:0; transform:translateY(-8px); pointer-events:none;
     transition:opacity .18s ease, transform .18s ease; }
-  .top:hover .bar, body.show-bar .bar, body:not(.ready) .bar{ opacity:1; transform:none; pointer-events:auto; }
+  /* Visibility is driven ENTIRELY by JS (body.show-bar) — no CSS :hover, which could get
+     stuck "on" when the webview swallows the mouse events and never cleared the hover. */
+  body.show-bar .bar, body:not(.ready) .bar{ opacity:1; transform:none; pointer-events:auto; }
 
   .brand{ font-size:11px; font-weight:600; letter-spacing:.02em; color:var(--tm); white-space:nowrap; }
   .spacer{ flex:1; }
@@ -40,6 +42,8 @@
   .hint p{ color:var(--tm); font-size:13px; line-height:1.5; max-width:260px; }
   .hint b{ color:var(--tp); }
   .hidden{ display:none !important; }
+  /* When the bar auto-hides after inactivity, hide the mouse pointer over the app too. */
+  body.hide-cursor, body.hide-cursor .top, body.hide-cursor .bar, body.hide-cursor .hint{ cursor:none; }
 </style>
 </head>
 <body>

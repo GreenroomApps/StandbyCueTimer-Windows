@@ -40,14 +40,44 @@ pin.addEventListener('click', () => { onTop = !onTop; pin.classList.toggle('on',
 document.getElementById('min').addEventListener('click', () => window.sc.minimize())
 document.getElementById('close').addEventListener('click', () => window.sc.quit())
 
-// Reveal the whole top bar whenever the mouse is near the top of the window, and
-// keep it up briefly after (so it doesn't rely on hovering a button exactly).
+// Auto-hide the top bar + the mouse pointer after 5s of no movement, and hide them
+// immediately when the pointer leaves the window or the app loses focus.
+//
+// Visibility is JS-only now (see the CSS note): body.show-bar shows the bar,
+// body.hide-cursor hides the pointer. The webview swallows mouse events, so once the
+// pointer is over the timer content the host stops getting mousemove — the 5s timer then
+// hides everything, which is exactly what we want.
 const topZone = document.querySelector('.top')
+const HIDE_MS = 5000
 let hideTimer
+
+function scheduleHide() {
+  clearTimeout(hideTimer)
+  hideTimer = setTimeout(() => {
+    document.body.classList.remove('show-bar')
+    document.body.classList.add('hide-cursor')     // hide the pointer too
+  }, HIDE_MS)
+}
 function revealBar() {
   document.body.classList.add('show-bar')
-  clearTimeout(hideTimer)
-  hideTimer = setTimeout(() => document.body.classList.remove('show-bar'), 1800)
+  document.body.classList.remove('hide-cursor')
+  scheduleHide()
 }
+function hideNow() {
+  clearTimeout(hideTimer)
+  document.body.classList.remove('show-bar')
+  document.body.classList.add('hide-cursor')
+}
+
+// Moving near the top reveals the bar; any movement in the window brings the pointer
+// back and restarts the 5s countdown while the bar is up.
 topZone.addEventListener('mouseenter', revealBar)
 topZone.addEventListener('mousemove', revealBar)
+window.addEventListener('mousemove', () => {
+  document.body.classList.remove('hide-cursor')
+  if (document.body.classList.contains('show-bar')) scheduleHide()
+})
+// The pointer left the window, or the app lost focus → hide bar + pointer right away.
+// (Fixes buttons that used to stay up because a stuck CSS :hover never cleared.)
+document.addEventListener('mouseleave', hideNow)
+window.addEventListener('blur', hideNow)
