@@ -14,19 +14,49 @@ function show(code) {
   view.classList.remove('hidden'); hint.classList.add('hidden')
 }
 
-let saved = ''
-try { saved = localStorage.getItem('sc.code') || '' } catch (e) { /* ignore */ }
-codeInput.value = saved
-if (saved) show(saved)
+// Recent event codes — remembered so you can re-pick one with a click. The app ALWAYS
+// starts on the code screen (it never auto-loads the last event), so a new day / new room
+// always begins with a fresh code entry.
+const recentEl = document.getElementById('recent')
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('sc.history') || '[]').filter(x => /^[A-Z0-9]{5}$/.test(x)) } catch (e) { return [] }
+}
+function pushHistory(code) {
+  if (!/^[A-Z0-9]{5}$/.test(code)) return
+  const list = [code, ...getHistory().filter(c => c !== code)].slice(0, 6)
+  try { localStorage.setItem('sc.history', JSON.stringify(list)) } catch (e) { /* ignore */ }
+  renderRecent()
+}
+function renderRecent() {
+  const list = getHistory()
+  recentEl.textContent = ''
+  if (list.length === 0) { recentEl.classList.add('hidden'); return }
+  recentEl.classList.remove('hidden')
+  const label = document.createElement('span'); label.className = 'recent-label'; label.textContent = 'Recent'
+  recentEl.appendChild(label)
+  for (const c of list) {
+    const b = document.createElement('button'); b.className = 'recent-chip'; b.type = 'button'; b.textContent = c
+    b.addEventListener('click', () => { codeInput.value = c; apply() })
+    recentEl.appendChild(b)
+  }
+}
 
 function apply() {
   const c = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5)
   codeInput.value = c
   try { localStorage.setItem('sc.code', c) } catch (e) { /* ignore */ }
+  if (c.length === 5) pushHistory(c)
   show(c)
 }
 codeInput.addEventListener('change', apply)
 codeInput.addEventListener('keydown', e => { if (e.key === 'Enter') { apply(); codeInput.blur() } })
+
+// Start fresh on the code screen every launch (don't reopen the last event), and offer
+// the recent codes as one-click shortcuts.
+codeInput.value = ''
+renderRecent()
+show('')
+setTimeout(() => { try { codeInput.focus() } catch (e) {} }, 50)
 
 // The timer page (in the webview) relays the API "fullscreen" toggle up to us; pass it
 // on to the main process to flip the OS window.
